@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kleedkamer Kracht — Heusden-Zolder Basketball</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;900&display=swap');
+
+  :root {
+    --oranje: #FF6B00;
+    --donker: #1A1A2E;
+    --paars: #16213E;
+    --goud: #FFD700;
+    --wit: #F5F5F0;
+    --groen: #2ECC71;
+    --rood: #E74C3C;
+    --lichtgrijs: #2d2d4e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--donker);
+    color: var(--wit);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Achtergrond patroon */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(255,107,0,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(255,215,0,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 30px 20px 20px;
+    border-bottom: 2px solid rgba(255,107,0,0.3);
+    margin-bottom: 30px;
+  }
+
+  .logo-ball {
+    font-size: 50px;
+    display: inline-block;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    color: var(--oranje);
+    letter-spacing: 4px;
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(255,107,0,0.4);
+  }
+
+  header p {
+    color: rgba(245,245,240,0.6);
+    font-size: 1rem;
+    margin-top: 6px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* PUNTEN BALK */
+  .punten-balk {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .punten-display {
+    background: linear-gradient(135deg, var(--oranje), #ff9500);
+    border-radius: 20px;
+    padding: 14px 30px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(255,107,0,0.4);
+  }
+
+  .punten-display .aantal {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: white;
+    line-height: 1;
+  }
+
+  .punten-display .label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.8);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .team-info {
+    background: var(--lichtgrijs);
+    border-radius: 16px;
+    padding: 12px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .team-info select, .team-info input {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,107,0,0.3);
+    border-radius: 8px;
+    color: var(--wit);
+    padding: 6px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .team-info select option { background: var(--donker); }
+
+  /* RAD SECTIE */
+  .rad-sectie {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 36px;
+  }
+
+  .rad-wrapper {
+    position: relative;
+    width: 360px;
+    height: 360px;
+  }
+
+  #spinCanvas {
+    border-radius: 50%;
+    filter: drop-shadow(0 0 20px rgba(255,107,0,0.5));
+    cursor: pointer;
+    transition: filter 0.3s;
+  }
+
+  #spinCanvas:hover {
+    filter: drop-shadow(0 0 30px rgba(255,107,0,0.8));
+  }
+
+  /* Pijl */
+  .pijl {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .pijl::before {
+    content: '▼';
+    position: absolute;
+    top: -185px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    filter: drop-shadow(0 0 6px var(--goud));
+  }
+
+  .spin-btn {
+    background: linear-gradient(135deg, var(--oranje), #ff9500);
+    color: white;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 25px rgba(255,107,0,0.5);
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .spin-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 35px rgba(255,107,0,0.7);
+  }
+
+  .spin-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* OPDRACHT POPUP */
+  .opdracht-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .opdracht-overlay.actief { display: flex; }
+
+  .opdracht-card {
+    background: linear-gradient(135deg, var(--paars), var(--lichtgrijs));
+    border: 2px solid var(--oranje);
+    border-radius: 24px;
+    padding: 36px;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(255,107,0,0.2);
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .opdracht-categorie {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .opdracht-emoji { font-size: 4rem; margin-bottom: 12px; display: block; }
+
+  .opdracht-titel {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--oranje);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .opdracht-beschrijving {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: rgba(245,245,240,0.9);
+    margin-bottom: 20px;
+  }
+
+  .punten-badge {
+    background: linear-gradient(135deg, var(--goud), #ffaa00);
+    color: var(--donker);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    padding: 8px 24px;
+    border-radius: 30px;
+    display: inline-block;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 15px rgba(255,215,0,0.4);
+  }
+
+  .opdracht-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-gedaan {
+    background: var(--groen);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-gedaan:hover { background: #27ae60; transform: scale(1.05); }
+
+  .btn-sluiten {
+    background: rgba(255,255,255,0.1);
+    color: var(--wit);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-sluiten:hover { background: rgba(255,255,255,0.2); }
+
+  /* BELONINGEN */
+  .beloningen-sectie {
+    background: var(--lichtgrijs);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+
+  .sectie-titel {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--oranje);
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .beloningen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .beloning-item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,107,0,0.2);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .beloning-item.behaald {
+    background: rgba(46,204,113,0.1);
+    border-color: var(--groen);
+  }
+
+  .beloning-item.behaald::after {
+    content: '✓';
+    position: absolute;
+    top: 8px; right: 10px;
+    color: var(--groen);
+    font-weight: 900;
+    font-size: 1.1rem;
+  }
+
+  .beloning-punt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--goud);
+  }
+
+  .beloning-naam {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin: 4px 0;
+    color: var(--wit);
+  }
+
+  .beloning-emoji { font-size: 1.8rem; }
+
+  /* VOLTOOIDE OPDRACHTEN */
+  .geschiedenis-sectie {
+    background: var(--lichtgrijs);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+
+  .geschiedenis-lijst {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+
+  .geschiedenis-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    font-size: 0.9rem;
+  }
+
+  .geschiedenis-item .g-punten {
+    margin-left: auto;
+    color: var(--goud);
+    font-weight: 700;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: rgba(245,245,240,0.3);
+    font-size: 0.8rem;
+  }
+
+  /* LEEFTIJD TABS */
+  .leeftijd-tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .leeftijd-tab {
+    padding: 8px 20px;
+    border-radius: 30px;
+    border: 2px solid rgba(255,107,0,0.3);
+    background: transparent;
+    color: rgba(245,245,240,0.6);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .leeftijd-tab.actief {
+    background: var(--oranje);
+    border-color: var(--oranje);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255,107,0,0.4);
+  }
+
+  .leeftijd-tab:hover:not(.actief) {
+    border-color: var(--oranje);
+    color: var(--wit);
+  }
+
+  /* RESET KNOP */
+  .reset-btn {
+    background: rgba(231,76,60,0.2);
+    color: var(--rood);
+    border: 1px solid var(--rood);
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { background: rgba(231,76,60,0.4); }
+
+  .lege-staat {
+    text-align: center;
+    color: rgba(245,245,240,0.3);
+    font-size: 0.95rem;
+    padding: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo-ball">🏀</div>
+    <h1>Kleedkamer Kracht</h1>
+    <p>Heusden-Zolder Basketball · Welbevinden & Zelfvertrouwen</p>
+  </header>
+
+  <!-- LEEFTIJD KEUZE -->
+  <div class="leeftijd-tabs">
+    <button class="leeftijd-tab actief" onclick="setLeeftijd('mini')">🐣 Mini's (6-9j)</button>
+    <button class="leeftijd-tab" onclick="setLeeftijd('u12')">⚡ U12 (10-11j)</button>
+    <button class="leeftijd-tab" onclick="setLeeftijd('u14')">🔥 U14 (12-13j)</button>
+    <button class="leeftijd-tab" onclick="setLeeftijd('u16')">💪 U16 (14-15j)</button>
+    <button class="leeftijd-tab" onclick="setLeeftijd('u18')">🚀 U18+ (16+)</button>
+  </div>
+
+  <!-- PUNTEN & TEAM -->
+  <div class="punten-balk">
+    <div class="punten-display">
+      <div class="aantal" id="puntenAantal">0</div>
+      <div class="label">Team Punten</div>
+    </div>
+    <div class="team-info">
+      <input type="text" id="teamNaam" placeholder="📝 Teamnaam..." value="Team Heusden">
+      <button class="reset-btn" onclick="resetPunten()">🔄 Reset punten</button>
+    </div>
+  </div>
+
+  <!-- RAD -->
+  <div class="rad-sectie">
+    <div class="rad-wrapper">
+      <canvas id="spinCanvas" width="360" height="360"></canvas>
+      <div class="pijl"></div>
+    </div>
+    <button class="spin-btn" id="spinBtn" onclick="draaiRad()">🎰 DRAAI HET RAD!</button>
+  </div>
+
+  <!-- BELONINGEN -->
+  <div class="beloningen-sectie">
+    <div class="sectie-titel">🏆 Beloningen</div>
+    <div class="beloningen-grid" id="beloningenGrid"></div>
+  </div>
+
+  <!-- GESCHIEDENIS -->
+  <div class="geschiedenis-sectie">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+      <div class="sectie-titel" style="margin-bottom:0">📋 Voltooide Opdrachten</div>
+    </div>
+    <div class="geschiedenis-lijst" id="geschiedenisLijst">
+      <div class="lege-staat">Nog geen opdrachten voltooid. Draai het rad!</div>
+    </div>
+  </div>
+
+  <footer>
+    Kleedkamer Kracht · Cross Course Welbevinden in de Sport · Hogeschool PXL 2025-2026
+  </footer>
+</div>
+
+<!-- OPDRACHT POPUP -->
+<div class="opdracht-overlay" id="opdrachtOverlay">
+  <div class="opdracht-card">
+    <div class="opdracht-categorie" id="opdrachtCategorie"></div>
+    <span class="opdracht-emoji" id="opdrachtEmoji"></span>
+    <div class="opdracht-titel" id="opdrachtTitel"></div>
+    <div class="opdracht-beschrijving" id="opdrachtBeschrijving"></div>
+    <div class="punten-badge" id="opdrachtPunten"></div>
+    <div class="opdracht-btns">
+      <button class="btn-gedaan" onclick="opdrachtGedaan()">✅ Opdracht Gedaan!</button>
+      <button class="btn-sluiten" onclick="sluitOpdracht()">✗ Later</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// DATA: OPDRACHTEN PER LEEFTIJDSGROEP
+// =============================================
+
+const opdrachtenData = {
+  mini: [
+    { emoji:'🎵', titel:'Dansfeestje!', beschrijving:'Zet samen één liedje op en dans allemaal in de kleedkamer. Iedereen doet mee, ook de coaches!', punten: 10, kleur:'#FF6B6B', categorie:'Plezier' },
+    { emoji:'🤝', titel:'Complimentje', beschrijving:'Geef elke ploegmaat één compliment. Niet over basketbal, maar over wie ze zijn. Bijv: "Jij bent zo grappig!"', punten: 15, kleur:'#4ECDC4', categorie:'Verbinding' },
+    { emoji:'🧹', titel:'Kleedkamer Superhelden', beschrijving:'Ruim samen de kleedkamer op na de training. Wie de meeste spullen opruimt krijgt een grote high-five van iedereen!', punten: 10, kleur:'#45B7D1', categorie:'Samenwerken' },
+    { emoji:'🎨', titel:'Teamtekening', beschrijving:'Maak samen op één groot vel papier een tekening van jullie superteam. Iedereen tekent minstens één ding.', punten: 20, kleur:'#96CEB4', categorie:'Creativiteit' },
+    { emoji:'🤗', titel:'Groepsknuffel', beschrijving:'Doe een echte groepsknuffel met zijn allen in de kleedkamer. Tel samen tot 5!', punten: 5, kleur:'#FFEAA7', categorie:'Verbinding' },
+    { emoji:'🍕', titel:'Snackmoment', beschrijving:'Breng volgende training een klein hapje mee voor het hele team en eet samen in de kleedkamer. Vertel erbij wat je hebt meegebracht!', punten: 25, kleur:'#DDA0DD', categorie:'Samenzijn' },
+    { emoji:'🎭', titel:'Gekke Gezichten', beschrijving:'Elke speler maakt het gekste gezicht dat hij/zij kan. De rest raadt welk gevoel het is. Eindig met allemaal dezelfde lach!', punten: 10, kleur:'#FF6B00', categorie:'Plezier' },
+    { emoji:'🌟', titel:'Sterspeler Van De Dag', beschrijving:'Kies samen (zonder coaches!) de "Sterspeler van de Dag" — niet de beste speler, maar de vriendelijkste of grappigste persoon vandaag.', punten: 15, kleur:'#FFD700', categorie:'Verbinding' },
+  ],
+  u12: [
+    { emoji:'🎤', titel:'Kleedkamer Playlist', beschrijving:'Elke speler kiest één liedje voor de teamplaylist. Jullie luisteren elke training naar minstens 2 liedjes samen in de kleedkamer.', punten: 20, kleur:'#FF6B6B', categorie:'Samenzijn' },
+    { emoji:'🏆', titel:'Erelijst van de Kleedkamer', beschrijving:'Maak samen een grappige "erelijst" op de kleedkamermuur. Categorieën als: "Langste haar", "Luidste lacher", "Beste danser". Iedereen wint iets!', punten: 25, kleur:'#4ECDC4', categorie:'Creativiteit' },
+    { emoji:'🧩', titel:'Teamchallenge', beschrijving:'Doe samen een challenge die niets met basketbal te maken heeft — bijv. stapel schoenen zo hoog mogelijk zonder omvallen. Samen denken, samen lachen!', punten: 15, kleur:'#45B7D1', categorie:'Samenwerken' },
+    { emoji:'🤝', titel:'De Geheime Handshake', beschrijving:'Verzin met het volledige team een unieke geheime handshake die jullie voor elke wedstrijd doen. Oefen hem 3 keer!', punten: 30, kleur:'#96CEB4', categorie:'Teamidentiteit' },
+    { emoji:'📸', titel:'Teamfoto Stijl', beschrijving:'Maak in de kleedkamer een gekke/creatieve groepsfoto. Elke speler kiest zelf zijn/haar pose. Sla de foto op voor de herinneringen!', punten: 20, kleur:'#FFEAA7', categorie:'Plezier' },
+    { emoji:'🎁', titel:'Verrassingsdoos', beschrijving:'Elke speler schrijft op een briefje wat hij/zij het leukste aan het team vindt. Gooi alle briefjes in een doos en lees ze voor — anoniem!', punten: 25, kleur:'#DDA0DD', categorie:'Verbinding' },
+    { emoji:'🍫', titel:'Traktatie Roulette', beschrijving:'Trek lootjes: wie de lootje trekt, trakteert de volgende training iets kleins (koek, fruit...). Wie getrakteerd wordt, zegt een oprechte dankjewel.', punten: 20, kleur:'#FF6B00', categorie:'Samenzijn' },
+    { emoji:'💬', titel:'Kleedkamergesprek', beschrijving:'Coaches verlaten even de kleedkamer. De spelers bespreken samen: wat doen we goed als team? Eén iemand vat samen en vertelt het aan de coach.', punten: 30, kleur:'#2ECC71', categorie:'Communicatie' },
+  ],
+  u14: [
+    { emoji:'🗣️', titel:'Complimentenronde', beschrijving:'Elke speler geeft de persoon links van hem/haar één eerlijk, specifiek compliment over zijn/haar persoonlijkheid — niets sportiefs. Niemand mag passen.', punten: 25, kleur:'#FF6B6B', categorie:'Verbinding' },
+    { emoji:'🎧', titel:'Kleedkamerplaylist Stemming', beschrijving:'Stel samen een playlist samen voor voor de wedstrijd én na de wedstrijd. Bespreek waarom bepaalde nummers energie geven of juist kalmeren.', punten: 20, kleur:'#4ECDC4', categorie:'Teamidentiteit' },
+    { emoji:'🥘', titel:'Kleedkamerdiner', beschrijving:'Organiseer een simpel gedeeld eetmoment na de training (iedereen brengt iets mee). Eet samen in de kleedkamer — geen telefoons aan tafel!', punten: 40, kleur:'#45B7D1', categorie:'Samenzijn' },
+    { emoji:'📜', titel:'Team Manifest', beschrijving:'Schrijf samen een kort "team manifest" van 5 regels — geen sportregels, maar gedragsregels: hoe gaan jullie met elkaar om? Hang het op in de kleedkamer.', punten: 35, kleur:'#96CEB4', categorie:'Teamidentiteit' },
+    { emoji:'😂', titel:'Roast & Toast', beschrijving:'Elke speler krijgt 30 seconden: begin met een grappige roast (vriendelijk!) van een ploegmaat, eindig met een oprecht compliment. Coach gaat ook!', punten: 30, kleur:'#FFEAA7', categorie:'Plezier' },
+    { emoji:'🧹', titel:'Kleedkamer Metamorfose', beschrijving:'Maak de kleedkamer mooier: poetsen, versieren, iets nieuws ophangen. Samen beslissen hoe, samen uitvoeren, samen bewonderen.', punten: 35, kleur:'#DDA0DD', categorie:'Samenwerken' },
+    { emoji:'🎭', titel:'Theatersport', beschrijving:'Speel 10 minuten theatersport/impro in de kleedkamer. Thema: grappige basketbalsituaties. Regels: iedereen doet mee, niemand mag "nee" zeggen.', punten: 25, kleur:'#FF6B00', categorie:'Plezier' },
+    { emoji:'💪', titel:'Positieve Affirmaties', beschrijving:'Sta in een kring. Elke speler zegt luid één ding waar hij/zij trots op is — niet sportief. Coach begint. Eindig met een gezamenlijke strijdkreet.', punten: 20, kleur:'#2ECC71', categorie:'Zelfvertrouwen' },
+    { emoji:'📱', titel:'Telefoonvrij Kwartier', beschrijving:'Alle telefoons gaan voor 15 minuten in de tas. Praat gewoon met elkaar, vertel een grap, speel een spel. Wie slaagt voor de hele tijd mag de volgende opdracht kiezen.', punten: 30, kleur:'#E74C3C', categorie:'Verbinding' },
+  ],
+  u16: [
+    { emoji:'🔥', titel:'Diepgesprek: Druk & Verwachting', beschrijving:'Bespreek in de kleedkamer (zonder coaches): welke druk voelen jullie? Van ouders, school, zichzelf? Geen oordelen — alleen luisteren. Eén persoon vat samen.', punten: 40, kleur:'#FF6B6B', categorie:'Mentale Kracht' },
+    { emoji:'🎤', titel:'Kleedkamerconcert', beschrijving:'Elke speler zingt of rapt één zin van zijn favoriete liedje. De rest probeert mee te doen. Eindig met een gezamenlijke favoriet die iedereen kent.', punten: 25, kleur:'#4ECDC4', categorie:'Plezier' },
+    { emoji:'🗺️', titel:'Teamreis Plannen', beschrijving:'Plan samen een droomuitstap — budgetloos creatief denken. Waar gaan jullie naartoe? Wat doen jullie? Presenteer het idee als echte teambuilding.', punten: 35, kleur:'#45B7D1', categorie:'Samenwerken' },
+    { emoji:'📖', titel:'Onze Teamgeschiedenis', beschrijving:'Maak samen een tijdlijn van jullie seizoen: grappige momenten, moeilijke momenten, groei. Hang het op in de kleedkamer of maak er een digitale versie van.', punten: 40, kleur:'#96CEB4', categorie:'Teamidentiteit' },
+    { emoji:'🤲', titel:'Erkenningsceremonie', beschrijving:'Organiseer zelf een mini-ceremonie: verzin categorieën (bv. "Meest positieve energie", "Sterkste comebackspeler") en kies winnaars. Iedereen krijgt iets.', punten: 45, kleur:'#FFEAA7', categorie:'Verbinding' },
+    { emoji:'🧠', titel:'Mentale Eerste Hulp', beschrijving:'Bespreek samen: wat doe je als je je slecht voelt voor een wedstrijd? Deel jullie persoonlijke trucjes en maak een gezamenlijke "mentale toolkit" op papier.', punten: 50, kleur:'#DDA0DD', categorie:'Mentale Kracht' },
+    { emoji:'🎬', titel:'Blooperreel', beschrijving:'Verzamel grappige herinneringen en vertel ze aan elkaar in de kleedkamer. Wie heeft de beste anekdote? Stem en bekroon de winnaar met een zelfgemaakt "Oscar".', punten: 30, kleur:'#FF6B00', categorie:'Plezier' },
+    { emoji:'📝', titel:'Brief aan Toekomstige Teamleden', beschrijving:'Schrijf samen een brief aan toekomstige spelers: wat is er speciaal aan dit team? Wat wil je doorgeven? Sluit hem op in een enveloppe voor volgend seizoen.', punten: 45, kleur:'#2ECC71', categorie:'Teamidentiteit' },
+    { emoji:'🌙', titel:'Slaapfeestje (Mini Versie)', beschrijving:'Organiseer een informele avond: films, spelletjes, eten. Geen basketbal — gewoon samen zijn. Plan, organiseer en voer zelf uit als team.', punten: 60, kleur:'#9B59B6', categorie:'Samenzijn' },
+  ],
+  u18: [
+    { emoji:'💬', titel:'Kwetsbare Kring', beschrijving:'Elke speler deelt iets wat hij/zij moeilijk vindt — in de sport of daarbuiten. Geen advies geven, alleen luisteren. Afsluiten met: "Ik waardeer jou omdat..."', punten: 50, kleur:'#FF6B6B', categorie:'Mentale Kracht' },
+    { emoji:'🍳', titel:'Team Kookt Samen', beschrijving:'Kook of bereid samen een maaltijd na de training. Iedereen brengt één ingredient mee. Eet samen aan een tafel — telefoons weg.', punten: 60, kleur:'#4ECDC4', categorie:'Samenzijn' },
+    { emoji:'🎯', titel:'Persoonlijke Doelen Muur', beschrijving:'Iedereen schrijft zijn persoonlijk doel voor dit seizoen op — niet sportief. Hang het op in de kleedkamer. Check elke maand of je op weg bent.', punten: 40, kleur:'#45B7D1', categorie:'Zelfvertrouwen' },
+    { emoji:'🔁', titel:'Rollenwissel', beschrijving:'Eén training loopt alles anders: spelers geven feedback aan coaches, jongeren leiden de warming-up, coaches doen gewoon mee. Reflecteer daarna samen.', punten: 55, kleur:'#96CEB4', categorie:'Leiderschap' },
+    { emoji:'🎙️', titel:'Podcast Opname (Mini)', beschrijving:'Neem een 5-minuten "team podcast" op: wie zijn jullie? Wat maakt jullie bijzonder? Laat één iemand het achteraf op de teamgroep zetten.', punten: 45, kleur:'#FFEAA7', categorie:'Teamidentiteit' },
+    { emoji:'🌿', titel:'Mindfulness Moment', beschrijving:'Doe samen een 5-minuten ademhalings- of mindfulnessoefening in de kleedkamer voor de wedstrijd. Zoek op YouTube een korte geleide meditatie. Bespreek hoe het voelde.', punten: 35, kleur:'#DDA0DD', categorie:'Mentale Kracht' },
+    { emoji:'🏡', titel:'Kleedkamer Renovatie', beschrijving:'Geef de kleedkamer een upgrade: inspirerende teksten, teamfoto\'s, een sfeerverlichting... Beslis samen, voer samen uit. Jullie eigen plek, jullie eigen sfeer.', punten: 65, kleur:'#FF6B00', categorie:'Teamidentiteit' },
+    { emoji:'🤝', titel:'Mentormoment', beschrijving:'Oudere spelers koppelen aan jongere spelers voor een gesprek (geen basketbal-advies). Wat heb je geleerd dit seizoen over jezelf? Luister actief.', punten: 50, kleur:'#2ECC71', categorie:'Leiderschap' },
+    { emoji:'📃', titel:'Teamcharter Opstellen', beschrijving:'Stel samen een officieel "Teamcharter" op: waarden, gedragsregels, beloftes aan elkaar. Onderteken met zijn allen. Frame het en hang het op.', punten: 70, kleur:'#9B59B6', categorie:'Teamidentiteit' },
+    { emoji:'🎉', titel:'Seizoensfeest Organiseren', beschrijving:'Plan en organiseer zelf een eindejaarsevenement: locatie, activiteiten, eten, muziek. Coaches helpen niet — enkel jullie. Presenteer het plan volgende training.', punten: 80, kleur:'#E74C3C', categorie:'Leiderschap' },
+  ]
+};
+
+const beloningenData = [
+  { punten: 30, naam: 'IJsjes na training 🍦', emoji: '🍦' },
+  { punten: 75, naam: 'Film & Popcorn avond 🎬', emoji: '🎬' },
+  { punten: 120, naam: 'Teamshirt bedrukken 👕', emoji: '👕' },
+  { punten: 180, naam: 'Bowling uitstap 🎳', emoji: '🎳' },
+  { punten: 260, naam: 'Paintball avontuur 🎯', emoji: '🎯' },
+  { punten: 350, naam: 'Teamweekend 🏕️', emoji: '🏕️' },
+];
+
+// =============================================
+// STATE
+// =============================================
+let huidigLeeftijd = 'mini';
+let huidigOpdracht = null;
+let teamPunten = parseInt(localStorage.getItem('kleedkamerPunten') || '0');
+let geschiedenis = JSON.parse(localStorage.getItem('kleedkamerGeschiedenis') || '[]');
+let isSpinning = false;
+let huidigRotatie = 0;
+
+// =============================================
+// RAD TEKENEN
+// =============================================
+
+const kleuren = ['#FF6B00','#E74C3C','#9B59B6','#2980B9','#27AE60','#F39C12','#1ABC9C','#D35400','#8E44AD','#2C3E50'];
+
+function tekenRad(rotatie) {
+  const canvas = document.getElementById('spinCanvas');
+  const ctx = canvas.getContext('2d');
+  const cx = 180, cy = 180, r = 170;
+  const opdrachten = opdrachtenData[huidigLeeftijd];
+  const n = opdrachten.length;
+  const hoek = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, 360, 360);
+
+  // Buitenste gloed
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,107,0,0.5)';
+  ctx.shadowBlur = 20;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, 2*Math.PI);
+  ctx.fillStyle = '#1A1A2E';
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotatie);
+
+  for (let i = 0; i < n; i++) {
+    const start = i * hoek;
+    const end = start + hoek;
+    const mid = start + hoek / 2;
+
+    // Segment
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, r - 4, start, end);
+    ctx.closePath();
+    ctx.fillStyle = kleuren[i % kleuren.length];
+    ctx.fill();
+    ctx.strokeStyle = '#1A1A2E';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Emoji
+    ctx.save();
+    ctx.rotate(mid);
+    ctx.translate(r * 0.6, 0);
+    ctx.rotate(-mid - rotatie);
+    ctx.font = n <= 6 ? '26px serif' : '20px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(opdrachten[i].emoji, 0, 0);
+    ctx.restore();
+
+    // Punten label
+    ctx.save();
+    ctx.rotate(mid);
+    ctx.translate(r * 0.35, 0);
+    ctx.rotate(-mid - rotatie);
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 13px Nunito, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(opdrachten[i].punten + 'p', 0, 0);
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  // Centrum cirkel
+  ctx.beginPath();
+  ctx.arc(cx, cy, 28, 0, 2 * Math.PI);
+  ctx.fillStyle = '#1A1A2E';
+  ctx.fill();
+  ctx.strokeStyle = '#FF6B00';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Basketbal in centrum
+  ctx.font = '22px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🏀', cx, cy);
+}
+
+// =============================================
+// DRAAIEN
+// =============================================
+
+function draaiRad() {
+  if (isSpinning) return;
+  isSpinning = true;
+  document.getElementById('spinBtn').disabled = true;
+
+  const opdrachten = opdrachtenData[huidigLeeftijd];
+  const winnerIndex = Math.floor(Math.random() * opdrachten.length);
+  const n = opdrachten.length;
+  const hoekPerSegment = (2 * Math.PI) / n;
+
+  // Bereken doelrotatie
+  const targetAngle = (2 * Math.PI * 5) + (2 * Math.PI - (winnerIndex * hoekPerSegment + hoekPerSegment / 2));
+  const totalRotation = huidigRotatie + targetAngle;
+
+  const startTime = performance.now();
+  const duration = 4000;
+  const startRot = huidigRotatie;
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 4);
+    const currentRot = startRot + (totalRotation - startRot) * ease;
+
+    tekenRad(currentRot);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      huidigRotatie = totalRotation % (2 * Math.PI);
+      tekenRad(huidigRotatie);
+      isSpinning = false;
+      document.getElementById('spinBtn').disabled = false;
+      toonOpdracht(opdrachten[winnerIndex]);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// =============================================
+// OPDRACHT TONEN
+// =============================================
+
+function toonOpdracht(opdracht) {
+  huidigOpdracht = opdracht;
+  document.getElementById('opdrachtEmoji').textContent = opdracht.emoji;
+  document.getElementById('opdrachtTitel').textContent = opdracht.titel;
+  document.getElementById('opdrachtBeschrijving').textContent = opdracht.beschrijving;
+  document.getElementById('opdrachtPunten').textContent = '🏅 ' + opdracht.punten + ' punten';
+  
+  const cat = document.getElementById('opdrachtCategorie');
+  cat.textContent = opdracht.categorie;
+  cat.style.background = opdracht.kleur + '33';
+  cat.style.color = opdracht.kleur;
+  cat.style.border = '1px solid ' + opdracht.kleur + '66';
+
+  document.getElementById('opdrachtOverlay').classList.add('actief');
+}
+
+function sluitOpdracht() {
+  document.getElementById('opdrachtOverlay').classList.remove('actief');
+  huidigOpdracht = null;
+}
+
+function opdrachtGedaan() {
+  if (!huidigOpdracht) return;
+  
+  teamPunten += huidigOpdracht.punten;
+  
+  geschiedenis.unshift({
+    emoji: huidigOpdracht.emoji,
+    titel: huidigOpdracht.titel,
+    punten: huidigOpdracht.punten,
+    datum: new Date().toLocaleDateString('nl-BE')
+  });
+
+  localStorage.setItem('kleedkamerPunten', teamPunten);
+  localStorage.setItem('kleedkamerGeschiedenis', JSON.stringify(geschiedenis));
+
+  updatePunten();
+  updateGeschiedenis();
+  updateBeloningen();
+  sluitOpdracht();
+
+  // Confetti effect
+  confettiEffect();
+}
+
+// =============================================
+// UI UPDATES
+// =============================================
+
+function updatePunten() {
+  const el = document.getElementById('puntenAantal');
+  const start = parseInt(el.textContent) || 0;
+  const end = teamPunten;
+  const duration = 800;
+  const startTime = performance.now();
+
+  function countUp(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    el.textContent = Math.round(start + (end - start) * progress);
+    if (progress < 1) requestAnimationFrame(countUp);
+  }
+  requestAnimationFrame(countUp);
+}
+
+function updateGeschiedenis() {
+  const lijst = document.getElementById('geschiedenisLijst');
+  if (geschiedenis.length === 0) {
+    lijst.innerHTML = '<div class="lege-staat">Nog geen opdrachten voltooid. Draai het rad!</div>';
+    return;
+  }
+  lijst.innerHTML = geschiedenis.slice(0, 20).map(item => `
+    <div class="geschiedenis-item">
+      <span style="font-size:1.4rem">${item.emoji}</span>
+      <div>
+        <div style="font-weight:700">${item.titel}</div>
+        <div style="font-size:0.78rem; color:rgba(245,245,240,0.5)">${item.datum}</div>
+      </div>
+      <span class="g-punten">+${item.punten}p</span>
+    </div>
+  `).join('');
+}
+
+function updateBeloningen() {
+  const grid = document.getElementById('beloningenGrid');
+  grid.innerHTML = beloningenData.map(b => `
+    <div class="beloning-item ${teamPunten >= b.punten ? 'behaald' : ''}">
+      <div class="beloning-emoji">${b.emoji}</div>
+      <div class="beloning-naam">${b.naam}</div>
+      <div class="beloning-punt">${b.punten}p</div>
+      ${teamPunten >= b.punten ? '' : `<div style="font-size:0.75rem; color:rgba(245,245,240,0.4); margin-top:4px">${b.punten - teamPunten} punten te gaan</div>`}
+    </div>
+  `).join('');
+}
+
+function setLeeftijd(leeftijd) {
+  huidigLeeftijd = leeftijd;
+  document.querySelectorAll('.leeftijd-tab').forEach((tab, i) => {
+    tab.classList.toggle('actief', ['mini','u12','u14','u16','u18'][i] === leeftijd);
+  });
+  huidigRotatie = 0;
+  tekenRad(0);
+}
+
+function resetPunten() {
+  if (!confirm('Weet je zeker dat je alle punten wilt resetten?')) return;
+  teamPunten = 0;
+  geschiedenis = [];
+  localStorage.setItem('kleedkamerPunten', 0);
+  localStorage.setItem('kleedkamerGeschiedenis', '[]');
+  updatePunten();
+  updateGeschiedenis();
+  updateBeloningen();
+}
+
+// =============================================
+// CONFETTI
+// =============================================
+
+function confettiEffect() {
+  const colors = ['#FF6B00','#FFD700','#2ECC71','#3498DB','#E74C3C','#9B59B6'];
+  for (let i = 0; i < 40; i++) {
+    const confetti = document.createElement('div');
+    confetti.style.cssText = `
+      position: fixed;
+      width: 10px; height: 10px;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+      left: ${Math.random() * 100}vw;
+      top: -20px;
+      z-index: 9999;
+      pointer-events: none;
+      animation: confettiFall ${1.5 + Math.random() * 2}s ease-in forwards;
+      animation-delay: ${Math.random() * 0.5}s;
+    `;
+    document.body.appendChild(confetti);
+    setTimeout(() => confetti.remove(), 4000);
+  }
+}
+
+const style = document.createElement('style');
+style.textContent = `
+@keyframes confettiFall {
+  from { transform: translateY(0) rotate(0deg); opacity: 1; }
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}`;
+document.head.appendChild(style);
+
+// =============================================
+// INIT
+// =============================================
+
+tekenRad(0);
+updatePunten();
+updateGeschiedenis();
+updateBeloningen();
+</script>
+</body>
+</html>
